@@ -2,7 +2,7 @@
 
 Jekyll plugin for building Jekyll sites with any public GitHub-hosted theme
 
-[![Gem Version](https://badge.fury.io/rb/jekyll-remote-theme.svg)](https://badge.fury.io/rb/jekyll-remote-theme) [![Build Status](https://travis-ci.org/benbalter/jekyll-remote-theme.svg?branch=master)](https://travis-ci.org/benbalter/jekyll-remote-theme) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Gem Version](https://badge.fury.io/rb/jekyll-remote-theme.svg)](https://badge.fury.io/rb/jekyll-remote-theme) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 
 ## Usage
@@ -26,19 +26,79 @@ Jekyll plugin for building Jekyll sites with any public GitHub-hosted theme
 3. Add the following to your site's `_config.yml` to choose your theme
 
   ```yml
-  remote_theme: benbalter/retlab
+  remote_theme: owner/theme
   ```
 or <sup>1</sup>
   ```yml
-  remote_theme: http[s]://github.<Enterprise>.com/benbalter/retlab
+  remote_theme: http[s]://github.<Enterprise>.com/owner/theme
   ```
-<sup>1</sup> The codeload subdomain needs to be available on your github enterprise instance for this to work.
+or <sup>2</sup>
+  ```yml
+  local_theme: _themes/my_theme_1
+  ```
+
+
+* <sup>1</sup> The code load subdomain needs to be available on your github enterprise instance for this to work.
+
+* <sup>2</sup> See [Local Themes](#local-themes) below
+
+### Including additional files
+
+You can also specify additional files in `_config.yml`.
+
+1. Add the `remote_theme_include` key to your `_config.yml`:
+
+    ```yml
+    remote_theme: owner/theme
+    remote_theme_include:
+      - 404.html
+      - assets/js/custom.js
+    ```
+
+2. Structure of File Paths
+
+  - Paths are relative to the site's source directory.
+  - You can include files from subdirectories (e.g., assets/js/custom.js).
+
+3. Build Your Site
+
+  When you build your site with `jekyll build` or `jekyll serve`, the plugin will include the specified files from the remote theme <ins>if</ins> they are not present locally.
+
+### Local Themes
+
+This plugin also supports sourcing themes from a local folder specified via a new `local_theme` configuration key in your `_config.yml`. The `remote_theme` key still takes precedence if both are specified.
+
+1. To configure with a local theme (not residing in the root, since that is the default behaviour of Jekyll).
+
+    In your site's `_config.yml`, specify the `local_theme` key with the relative path to your local theme directory:
+
+    ```yaml
+    local_theme: _themes/my_theme_1
+    ```
+
+    or, with the absolute path to your theme directory:
+
+    ```yaml
+    local_theme: /Users/username/projects/jekyll-site/_themes/my_theme_1
+    ```
+
+    If both `remote_theme` and `local_theme` are specified then the plugin will use the `remote_theme` (`owner/theme`) and ignore `local_theme` (`_themes/my_theme_1`).
+
+2. Organize Your Local Theme
+
+    Place your local theme files in the specified directory.
+
+    The directory structure should match a standard Jekyll theme.
+
+    - Include directories like `_layouts`, `_includes`, `_sass`, `assets`, etc.
+
+
 
 ## Declaring your theme
 
 Remote themes are specified by the `remote_theme` key in the site's config.
 
-For public GitHub, remote themes must be in the form of `OWNER/REPOSITORY`, and must represent a public GitHub-hosted Jekyll theme. See [the Jekyll documentation](https://jekyllrb.com/docs/themes/) for more information on authoring a theme. Note that you do not need to upload the gem to RubyGems or include a `.gemspec` file.
+For public GitHub, remote themes must be in the form of `OWNER/REPOSITORY`, and must represent a <ins>public</ins> GitHub-hosted Jekyll theme. See [the Jekyll documentation](https://jekyllrb.com/docs/themes/) for more information on authoring a theme. Note that you do not need to upload the gem to RubyGems or include a `.gemspec` file.
 
 You may also optionally specify a branch, tag, or commit to use by appending an `@` and the Git ref (e.g., `benbalter/retlab@v1.0.0` or `benbalter/retlab@develop`). If you don't specify a Git ref, the `HEAD` ref will be used.
 

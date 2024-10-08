@@ -73,6 +73,16 @@ module Jekyll
         raise DownloadError, "Maximum file size of #{MAX_FILE_SIZE} bytes exceeded"
       end
 
+      def safe_extract(archive, destination)
+        archive.each do |entry|
+          entry_path = File.expand_path(entry.name, destination)
+          unless entry_path.start_with?(File.expand_path(destination))
+            raise "Entry #{entry.name} is outside the destination directory"
+          end
+          entry.extract(entry_path)
+        end
+      end
+
       def unzip
         Jekyll.logger.debug LOG_KEY, "Unzipping #{zip_file.path} to #{theme.root}"
 
@@ -80,7 +90,7 @@ module Jekyll
         zip_file.rewind
 
         Zip::File.open(zip_file) do |archive|
-          archive.each { |file| file.extract path_without_name_and_ref(file.name) }
+          safe_extract(archive, theme.root)
         end
       ensure
         zip_file.close

@@ -57,12 +57,12 @@ Jekyll::Hooks.register :site, :after_reset do |site|
 end
 
 # Load theme data before the site's data is read
-Jekyll::Hooks.register :site, :pre_read do |site|
+Jekyll::Hooks.register :site, :pre_render do |site|
   Jekyll::RemoteTheme.load_theme_data(site)
 end
 
 # Include specified files from the theme if they are missing locally
-Jekyll::Hooks.register :site, :post_read do |site|
+Jekyll::Hooks.register :site, :post_render do |site|
   Jekyll::RemoteTheme.include_theme_files(site)
 end
 

@@ -83,14 +83,45 @@ module Jekyll
         end
       end
 
+      # Codeload generated zip files contain a top level folder in the form of
+      # THEME_NAME-GIT_REF/. While requests for Git repos are case insensitive,
+      # the zip subfolder will respect the case in the repository's name, thus
+      # making it impossible to predict the true path to the theme. In case we're
+      # on a case-sensitive file system, strip the parent folder from all paths.
+
       def unzip
         Jekyll.logger.debug LOG_KEY, "Unzipping #{zip_file.path} to #{theme.root}"
 
         # File IO is already open, rewind pointer to start of file to read
         zip_file.rewind
 
-        Zip::File.open(zip_file) do |archive|
-          safe_extract(archive, theme.root)
+        # Create a temporary directory to extract the zip
+        Dir.mktmpdir(TEMP_PREFIX) do |tmp_dir|
+          Zip::File.open(zip_file) do |archive|
+            archive.each do |entry|
+              extracted_path = File.join(tmp_dir, entry.name)
+              # Jekyll.logger.debug LOG_KEY, "Extracting #{entry.name} to #{extracted_path}"
+
+              # Ensure the directory exists
+              FileUtils.mkdir_p(File.dirname(extracted_path))
+
+              # Extract the file or directory
+              entry.extract(extracted_path) { true } # Overwrite if exists
+            end
+          end
+
+          # Identify the top-level directory
+          entries = Dir.entries(tmp_dir) - %w[. ..]
+          if entries.size == 1 && File.directory?(File.join(tmp_dir, entries.first))
+            top_level_dir = File.join(tmp_dir, entries.first)
+          else
+            top_level_dir = tmp_dir
+          end
+          Jekyll.logger.debug LOG_KEY, "Top level folder identified as #{top_level_dir}"
+
+          # Move the contents of the top-level directory to theme.root
+          FileUtils.mkdir_p(theme.root)
+          FileUtils.cp_r("#{top_level_dir}/.", theme.root)
         end
       ensure
         zip_file.close
@@ -114,11 +145,6 @@ module Jekyll
         Dir["#{theme.root}/*"].empty?
       end
 
-      # Codeload generated zip files contain a top level folder in the form of
-      # THEME_NAME-GIT_REF/. While requests for Git repos are case insensitive,
-      # the zip subfolder will respect the case in the repository's name, thus
-      # making it impossible to predict the true path to the theme. In case we're
-      # on a case-sensitive file system, strip the parent folder from all paths.
       def path_without_name_and_ref(path)
         Jekyll.sanitized_path theme.root, path.split("/").drop(1).join("/")
       end

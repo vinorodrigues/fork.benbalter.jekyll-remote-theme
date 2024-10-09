@@ -15,11 +15,15 @@ module Jekyll
         include_files = site.config[INCLUDE_FILES_KEY] || []
         return if include_files.empty?
 
+        Jekyll.logger.debug LOG_KEY, "Theme Root is: #{site.theme.root}"
+
         include_files.each do |file_path|
           local_file = File.join(site.source, file_path)
           next if File.exist?(local_file)
 
-          theme_file = File.join(site.theme.root, file_path)
+          theme_file = Jekyll.sanitized_path(site.theme.root, file_path)
+          Jekyll.logger.debug LOG_KEY, "Attempting to include file: #{file_path}"
+          Jekyll.logger.debug LOG_KEY, "Computed theme file path: #{theme_file}"
           if File.exist?(theme_file)
             Jekyll.logger.debug LOG_KEY, "Including #{file_path} from theme"
             copy_file(theme_file, local_file)
@@ -28,6 +32,8 @@ module Jekyll
             Jekyll.logger.warn LOG_KEY, "File #{file_path} not found in theme"
           end
         end
+
+        enqueue_cleanup_copied_files
       end
 
       def cleanup_copied_files
@@ -40,6 +46,12 @@ module Jekyll
           end
         end
         @copied_files.clear
+      end
+
+      def enqueue_cleanup_copied_files
+        at_exit do
+          cleanup_copied_files
+        end
       end
 
       private

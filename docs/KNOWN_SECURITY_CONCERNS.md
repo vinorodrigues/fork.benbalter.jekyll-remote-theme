@@ -54,3 +54,27 @@
 - **Solution:** Prevent execution of arbitrary code from themes by disabling custom plugins in themes or running the build process in a sandboxed environment.
 
 - **Implementation:** Configure Jekyll to ignore plugins from the theme by setting `safe: true` in the `_config.yml` or modifying the plugin loading mechanism. *(This is done automatically in Github Pages.)*
+
+---
+
+Other Security Considerations
+
+### Sensitive Information:
+
+The new Proxy feature allows you to add username and passwords in the `_config.yml`.
+
+**Avoid Hardcoding Credentials:** Do not hardcode proxy credentials in version-controlled files. Consider using environment variables or a separate configuration file that's ignored by version control.
+
+- Example Using Environment Variables:
+
+  ```yaml
+  proxy:
+    address: 'proxy.example.com'
+    port: 8080
+    username: '<%= ENV["PROXY_USERNAME"] %>'
+    password: '<%= ENV["PROXY_PASSWORD"] %>'
+  ```
+
+  Set the environment variables PROXY_USERNAME and PROXY_PASSWORD in your shell or deployment environment.
+
+---

@@ -42,17 +42,40 @@ or <sup>2</sup>
 
 * <sup>2</sup> See [Local Themes](#local-themes) below
 
+### Proxy Settings
+
+If you're buildind behind a Proxy you may need to validate with your proxy server.  To do this:
+
+* Configure Proxy Settings in _config.yml
+
+  Add a proxy section to your site's _config.yml file:
+
+  ```yaml
+  proxy:
+    address: 'proxy.example.com'
+    port: 8080
+    username: 'your_username' # Optional
+    password: 'your_password' # Optional
+  ```
+
+* Parameters:
+    - `address`: The proxy server address (required for proxy usage).
+    - `port`: The proxy server port (optional, default depends on proxy type).
+    - `username`: Your proxy username (optional). Please first read  about [Sensitive Information](./docs/KNOWN_SECURITY_CONCERNS.md#sensitive-information)!
+    - `password`: Your proxy password (optional).
+
 ### Including additional files
 
 You can also specify additional files in `_config.yml`.
 
-1. Add the `remote_theme_include` key to your `_config.yml`:
+1. Add the `include` key to your `_config.yml`:
 
     ```yml
     remote_theme: owner/theme
-    remote_theme_include:
+
+    include:
       - 404.html
-      - assets/js/custom.js
+      - anotherfolder/js/custom.js
     ```
 
 2. Structure of File Paths

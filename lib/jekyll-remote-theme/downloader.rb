@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'uri' # Needed to handle proxy URIs
+
 module Jekyll
   module RemoteTheme
     class Downloader
@@ -11,8 +13,9 @@ module Jekyll
         Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError,
       ].freeze
 
-      def initialize(theme)
+      def initialize(theme, site_config = {})
         @theme = theme
+        @site_config = site_config # Store site configuration
       end
 
       def run
@@ -31,7 +34,7 @@ module Jekyll
 
       private
 
-      attr_reader :theme
+      attr_reader :theme, :site_config
 
       def zip_file
         @zip_file ||= Tempfile.new([TEMP_PREFIX, ".zip"], :binmode => true)
@@ -39,9 +42,15 @@ module Jekyll
 
       def download
         Jekyll.logger.debug LOG_KEY, "Downloading #{zip_url} to #{zip_file.path}"
-        Net::HTTP.start(zip_url.host, zip_url.port, :use_ssl => true) do |http|
+
+        # Setup proxy if configured
+        proxy_uri = proxy_uri()
+
+        Net::HTTP.start(zip_url.host, zip_url.port,
+                        proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password,
+                        :use_ssl => true) do |http|
           http.request(request) do |response|
-            raise_unless_sucess(response)
+            raise_unless_success(response)
             enforce_max_file_size(response.content_length)
             response.read_body do |chunk|
               zip_file.write chunk
@@ -61,7 +70,7 @@ module Jekyll
         @request
       end
 
-      def raise_unless_sucess(response)
+      def raise_unless_success(response)
         return if response.is_a?(Net::HTTPSuccess)
 
         raise DownloadError, "#{response.code} - #{response.message} - Loading URL: #{zip_url}"
@@ -71,16 +80,6 @@ module Jekyll
         return unless size && size > MAX_FILE_SIZE
 
         raise DownloadError, "Maximum file size of #{MAX_FILE_SIZE} bytes exceeded"
-      end
-
-      def safe_extract(archive, destination)
-        archive.each do |entry|
-          entry_path = File.expand_path(entry.name, destination)
-          unless entry_path.start_with?(File.expand_path(destination))
-            raise "Entry #{entry.name} is outside the destination directory"
-          end
-          entry.extract(entry_path)
-        end
       end
 
       # Codeload generated zip files contain a top level folder in the form of
@@ -95,7 +94,7 @@ module Jekyll
         # File IO is already open, rewind pointer to start of file to read
         zip_file.rewind
 
-        # Create a temporary directory to extract the zip
+        # Extract to temporary directory and move contents
         Dir.mktmpdir(TEMP_PREFIX) do |tmp_dir|
           Zip::File.open(zip_file) do |archive|
             archive.each do |entry|
@@ -145,9 +144,25 @@ module Jekyll
         Dir["#{theme.root}/*"].empty?
       end
 
-      def path_without_name_and_ref(path)
-        Jekyll.sanitized_path theme.root, path.split("/").drop(1).join("/")
+      def proxy_uri
+        proxy_config = site_config['proxy'] || {}
+        proxy_address = proxy_config['address']
+        proxy_port = proxy_config['port']
+        proxy_user = proxy_config['username']
+        proxy_pass = proxy_config['password']
+
+        if proxy_address
+          URI::HTTP.build(
+            host: proxy_address,
+            port: proxy_port,
+            userinfo: [proxy_user, proxy_pass].compact.join(':')
+          )
+        else
+          # Returns a URI with host: nil, indicating no proxy.
+          URI::HTTP.build(host: nil)
+        end
       end
+
     end
   end
 end

@@ -53,7 +53,7 @@ module Jekyll
 
       def downloader
         return unless theme.is_a?(Jekyll::RemoteTheme::Theme)
-        @downloader ||= Downloader.new(theme)
+        @downloader ||= Downloader.new(theme, site.config)
       end
 
       def configure_theme

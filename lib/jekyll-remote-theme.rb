@@ -24,7 +24,7 @@ module Jekyll
 
     CONFIG_KEY           = "remote_theme"
     LOCAL_THEME_KEY      = "local_theme"
-    INCLUDE_FILES_KEY    = "remote_theme_include"
+    INCLUDE_FILES_KEY    = "include"  # Shares setting from https://jekyllrb.com/docs/configuration/options/
     LOG_KEY              = "Remote Theme:"
     TEMP_PREFIX          = "jekyll-remote-theme-"
 
@@ -46,13 +46,15 @@ module Jekyll
   end
 end
 
+# Initialise the plugin just after the site resets during regeneration
 Jekyll::Hooks.register :site, :after_reset do |site|
+  # Start 'er up
   Jekyll::RemoteTheme.init(site)
   # Include specified files from the theme if they are missing locally
   Jekyll::RemoteTheme.include_theme_files(site)
 end
 
+# Load theme data after the site's data is read
 Jekyll::Hooks.register :site, :post_read do |site|
-  # Load theme data before the site's data is read
   Jekyll::RemoteTheme.load_theme_data(site)
 end

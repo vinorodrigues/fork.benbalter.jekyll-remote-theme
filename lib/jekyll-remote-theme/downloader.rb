@@ -91,36 +91,37 @@ module Jekyll
       def unzip
         Jekyll.logger.debug LOG_KEY, "Unzipping #{zip_file.path} to #{theme.root}"
 
-        # File IO is already open, rewind pointer to start of file to read
         zip_file.rewind
 
-        # Extract to temporary directory and move contents
+        # Extract all entries to a temporary directory first
         Dir.mktmpdir(TEMP_PREFIX) do |tmp_dir|
           Zip::File.open(zip_file) do |archive|
             archive.each do |entry|
-              extracted_path = File.join(tmp_dir, entry.name)
-              # Jekyll.logger.debug LOG_KEY, "Extracting #{entry.name} to #{extracted_path}"
-
+              # Construct the full path where the entry will be extracted
+              entry_path = File.join(tmp_dir, entry.name)
               # Ensure the directory exists
-              FileUtils.mkdir_p(File.dirname(extracted_path))
-
-              # Extract the file or directory
-              entry.extract(extracted_path) { true } # Overwrite if exists
+              FileUtils.mkdir_p(File.dirname(entry_path))
+              # Extract the entry
+              entry.extract(entry_path) { true }
             end
           end
 
-          # Identify the top-level directory
-          entries = Dir.entries(tmp_dir) - %w[. ..]
-          if entries.size == 1 && File.directory?(File.join(tmp_dir, entries.first))
-            top_level_dir = File.join(tmp_dir, entries.first)
-          else
-            top_level_dir = tmp_dir
-          end
-          Jekyll.logger.debug LOG_KEY, "Top level folder identified as #{top_level_dir}"
+          # Analyze the top-level structure
+          top_level_entries = Dir.entries(tmp_dir) - %w[. ..]
 
-          # Move the contents of the top-level directory to theme.root
+          # Determine if we should remove the top-level directory
+          if top_level_entries.size == 1 && File.directory?(File.join(tmp_dir, top_level_entries.first))
+            # Only one top-level directory exists, remove it
+            source_dir = File.join(tmp_dir, top_level_entries.first)
+            Jekyll.logger.debug LOG_KEY, "Removing top-level directory #{top_level_entries.first}"
+          else
+            # Multiple top-level entries exist, keep them as is
+            source_dir = tmp_dir
+          end
+
+          # Copy the extracted files to theme.root
           FileUtils.mkdir_p(theme.root)
-          FileUtils.cp_r("#{top_level_dir}/.", theme.root)
+          FileUtils.cp_r(Dir.glob("#{source_dir}/*"), theme.root)
         end
       ensure
         zip_file.close

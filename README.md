@@ -1,4 +1,4 @@
-# Jekyll Remote Theme2
+# Jekyll Remote Theme *(redone)*
 
 Jekyll plugin for building Jekyll sites with any public GitHub-hosted theme.
 
@@ -6,7 +6,7 @@ Applies fixes to Jekyll Remote Theme by Ben Balter after the apparent dormancy o
 
 **:warning: NB:** This does not replace the GitHub Pages instance of `jekyll-remote-theme` ... unfortunately the you're stuck with the OG if you host on gh-pages.
 
-[![Gem Version](https://badge.fury.io/rb/jekyll-remote-theme2.svg)](https://badge.fury.io/rb/jekyll-remote-theme2)
+[![Gem Version](https://badge.fury.io/rb/jekyll-remote-theme.svg)](https://badge.fury.io/rb/jekyll-remote-theme)
 
 
 ## Usage
@@ -14,7 +14,7 @@ Applies fixes to Jekyll Remote Theme by Ben Balter after the apparent dormancy o
 1. Add the following to your Gemfile
 
   ```ruby
-  gem "jekyll-remote-theme2"
+  gem "jekyll-remote-theme"
   ```
 
   and run `bundle install` to install the plugin
@@ -23,7 +23,7 @@ Applies fixes to Jekyll Remote Theme by Ben Balter after the apparent dormancy o
 
   ```yml
   plugins:
-    - jekyll-remote-theme2
+    - jekyll-remote-theme
   ```
   Note: If you are using a Jekyll version less than 3.5.0, use the `gems` key instead of `plugins`.
 

@@ -13,20 +13,20 @@ module Jekyll
   module RemoteTheme
     class DownloadError < StandardError; end
 
-    autoload :Downloader,    "jekyll-remote-theme2/downloader"
-    autoload :MockGemspec,   "jekyll-remote-theme2/mock_gemspec"
-    autoload :Munger,        "jekyll-remote-theme2/munger"
-    autoload :Theme,         "jekyll-remote-theme2/theme"
-    autoload :LocalTheme,    "jekyll-remote-theme2/local_theme"
-    autoload :FileIncluder,  "jekyll-remote-theme2/file_includer"
-    autoload :DataLoader,    "jekyll-remote-theme2/data_loader"
-    autoload :VERSION,       "jekyll-remote-theme2/version"
+    autoload :Downloader,    "jekyll-remote-theme/downloader"
+    autoload :MockGemspec,   "jekyll-remote-theme/mock_gemspec"
+    autoload :Munger,        "jekyll-remote-theme/munger"
+    autoload :Theme,         "jekyll-remote-theme/theme"
+    autoload :LocalTheme,    "jekyll-remote-theme/local_theme"
+    autoload :FileIncluder,  "jekyll-remote-theme/file_includer"
+    autoload :DataLoader,    "jekyll-remote-theme/data_loader"
+    autoload :VERSION,       "jekyll-remote-theme/version"
 
     CONFIG_KEY           = "remote_theme"
     LOCAL_THEME_KEY      = "local_theme"
     INCLUDE_FILES_KEY    = "include"  # Shares setting from https://jekyllrb.com/docs/configuration/options/
     LOG_KEY              = "Remote Theme:"
-    TEMP_PREFIX          = "jekyll-remote-theme2-"
+    TEMP_PREFIX          = "jekyll-remote-theme-"
 
     def self.init(site)
       Munger.new(site).munge!

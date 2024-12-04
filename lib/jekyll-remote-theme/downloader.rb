@@ -5,8 +5,8 @@ require 'uri' # Needed to handle proxy URIs
 module Jekyll
   module RemoteTheme
     class Downloader
-      PROJECT_URL = "https://github.com/vinorodrigues/jekyll-remote-theme2"
-      USER_AGENT = "Jekyll Remote Theme2/#{VERSION} (+#{PROJECT_URL})"
+      PROJECT_URL = "https://github.com/vinorodrigues/jekyll-remote-theme"
+      USER_AGENT = "Jekyll Remote Theme/#{VERSION} (+#{PROJECT_URL})"
       MAX_FILE_SIZE = 1 * (1024 * 1024 * 1024) # Size in bytes (1 GB)
       NET_HTTP_ERRORS = [
         Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::OpenTimeout,

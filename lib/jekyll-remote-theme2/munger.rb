@@ -15,16 +15,16 @@ module Jekyll
         return unless raw_theme
 
         unless theme.valid?
-          Jekyll.logger.error LOG_KEY, "#{raw_theme.inspect} is not a valid remote theme"
+          Jekyll.logger.error LOG_KEY, "#{raw_theme.inspect} is not a valid theme"
           return
         end
 
-        Jekyll.logger.info LOG_KEY, "Using theme #{theme.name_with_owner}"
+        Jekyll.logger.info LOG_KEY, "Using theme #{theme.name_with_owner || theme.name}"
         unless munged?
-          downloader.run
+          downloader.run if downloader
           configure_theme
         end
-        enqueue_theme_cleanup
+        enqueue_theme_cleanup if theme.is_a?(Jekyll::RemoteTheme::Theme)
 
         theme
       end
@@ -32,19 +32,28 @@ module Jekyll
       private
 
       def munged?
-        site.theme&.is_a?(Jekyll::RemoteTheme::Theme)
+        site.theme&.is_a?(Jekyll::RemoteTheme::Theme) || site.theme&.is_a?(Jekyll::RemoteTheme::LocalTheme)
       end
 
       def theme
-        @theme ||= Theme.new(raw_theme)
+        @theme ||= if config[CONFIG_KEY]
+                     Theme.new(raw_theme)
+                   elsif config[LOCAL_THEME_KEY]
+                     LocalTheme.new(raw_theme, site)
+                   end
       end
 
       def raw_theme
-        config[CONFIG_KEY]
+        @raw_theme ||= if config[CONFIG_KEY]
+                         config[CONFIG_KEY]
+                       elsif config[LOCAL_THEME_KEY]
+                         config[LOCAL_THEME_KEY]
+                       end
       end
 
       def downloader
-        @downloader ||= Downloader.new(theme)
+        return unless theme.is_a?(Jekyll::RemoteTheme::Theme)
+        @downloader ||= Downloader.new(theme, site.config)
       end
 
       def configure_theme
